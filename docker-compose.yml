@@ -1,0 +1,47 @@
+# Services
+services:
+
+    # PHP Service
+    php:
+        build:
+            dockerfile: Dockerfile
+        volumes:
+            - './.docker/php:/var/www/html'
+        depends_on:
+            - mariadb
+
+    # Nginx Service
+    nginx:
+        image: nginx:latest
+        ports:
+            - "80:80"
+        links:
+            - 'php'
+        volumes:
+            - './.docker/php:/var/www/html'
+            - './.docker/nginx:/etc/nginx/conf.d'
+        depends_on:
+            - php
+
+    # MariaDB Service
+    mariadb:
+        image: mariadb:10.9
+        environment:
+            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+        volumes:
+            - mysqldata:/var/lib/mysql
+
+    # phpMyAdmin Service
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin:latest
+        ports:
+            - "8080:80"
+        environment:
+            PMA_HOST: mariadb
+        depends_on:
+            - mariadb
+
+# Volumes
+volumes:
+
+  mysqldata:
